@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canadian Small Business Tax Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .results-section {
+            padding: 30px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .collapsible {
+            background: #34495e;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .collapsible:hover {
+            background: #2c3e50;
+        }
+
+        .collapsible-content {
+            display: none;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+        }
+
+        .collapsible.active {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .collapsible-content.show {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Canadian Small Business Tax Calculator</h1>
+            <p>Calculate corporate taxes, personal taxes, HST, and net income for Ontario small businesses</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">Business Inputs</h2>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="revenue">Monthly Revenue (before HST)</label>
+                            <input type="number" id="revenue" step="0.01" value="10000">
+                        </div>
+                        <div>
+                            <label for="salary">Monthly Salary</label>
+                            <input type="number" id="salary" step="0.01" value="5000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="dividendPaid">Monthly Dividend Paid (Cash)</label>
+                            <input type="number" id="dividendPaid" step="0.01" value="1000">
+                        </div>
+                        <div>
+                            <label for="payrollSoftware">Monthly Payroll Software</label>
+                            <input type="number" id="payrollSoftware" step="0.01" value="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hstItcs">Monthly HST ITCs</label>
+                    <input type="number" id="hstItcs" step="0.01" value="500">
+                </div>
+
+                <button class="collapsible" onclick="toggleSection('taxRates')">Tax Rate Settings</button>
+                <div class="collapsible-content" id="taxRates">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div>
+                                <label for="fedDtcRate">Federal DTC Rate (non-eligible)</label>
+                                <input type="number" id="fedDtcRate" step="0.0001" value="0.0901">
+                            </div>
+                            <div>
+                                <label for="onDtcRate">ON DTC Rate (non-eligible)</label>
+                                <input type="number" id="onDtcRate" step="0.0001" value="0.0294">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div>
+                                <label for="fedBpa">Federal Basic Personal Amount</label>
+                                <input type="number" id="fedBpa" step="0.01" value="15000">
+                            </div>
+                            <div>
+                                <label for="onBpa">Ontario Basic Personal Amount</label>
+                                <input type="number" id="onBpa" step="0.01" value="11865">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div>
+                                <label for="fedLowRate">Federal Low Rate</label>
+                                <input type="number" id="fedLowRate" step="0.0001" value="0.15">
+                            </div>
+                            <div>
+                                <label for="onLowRate">Ontario Low Rate</label>
+                                <input type="number" id="onLowRate" step="0.0001" value="0.0505">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px; margin-bottom: 15px;">Federal Tax Brackets</h4>
+                    <div class="form-row">
+                        <div>
+                            <label for="fedCap1">Fed Cap 1</label>
+                            <input type="number" id="fedCap1" value="53359">
+                        </div>
+                        <div>
+                            <label for="fedRate1">Fed Rate 1</label>
+                            <input type="number" id="fedRate1" step="0.0001" value="0.15">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="fedCap2">Fed Cap 2</label>
+                            <input type="number" id="fedCap2" value="106717">
+                        </div>
+                        <div>
+                            <label for="fedRate2">Fed Rate 2</label>
+                            <input type="number" id="fedRate2" step="0.0001" value="0.205">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="fedCap3">Fed Cap 3</label>
+                            <input type="number" id="fedCap3" value="165430">
+                        </div>
+                        <div>
+                            <label for="fedRate3">Fed Rate 3</label>
+                            <input type="number" id="fedRate3" step="0.0001" value="0.26">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="fedCap4">Fed Cap 4</label>
+                            <input type="number" id="fedCap4" value="235675">
+                        </div>
+                        <div>
+                            <label for="fedRate4">Fed Rate 4</label>
+                            <input type="number" id="fedRate4" step="0.0001" value="0.29">
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px; margin-bottom: 15px;">Ontario Tax Brackets</h4>
+                    <div class="form-row">
+                        <div>
+                            <label for="onCap1">ON Cap 1</label>
+                            <input type="number" id="onCap1" value="49231">
+                        </div>
+                        <div>
+                            <label for="onRate1">ON Rate 1</label>
+                            <input type="number" id="onRate1" step="0.0001" value="0.0505">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="onCap2">ON Cap 2</label>
+                            <input type="number" id="onCap2" value="98463">
+                        </div>
+                        <div>
+                            <label for="onRate2">ON Rate 2</label>
+                            <input type="number" id="onRate2" step="0.0001" value="0.0915">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="onCap3">ON Cap 3</label>
+                            <input type="number" id="onCap3" value="150000">
+                        </div>
+                        <div>
+                            <label for="onRate3">ON Rate 3</label>
+                            <input type="number" id="onRate3" step="0.0001" value="0.1116">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label for="onCap4">ON Cap 4</label>
+                            <input type="number" id="onCap4" value="220000">
+                        </div>
+                        <div>
+                            <label for="onRate4">ON Rate 4</label>
+                            <input type="number" id="onRate4" step="0.0001" value="0.1216">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculateTaxes()">Calculate Taxes</button>
+            </div>
+
+            <div class="results-section">
+                <h2 class="section-title">Results</h2>
+                <div class="results-grid" id="results">
+                    <p>Enter your business details and click "Calculate Taxes" to see results.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CPP and EI constants for 2025
+        const CPP_RATE = 0.0595;
+        const CPP_MAX_ANNUAL = 71300;
+        const CPP_EXEMPTION = 3500;
+        const EI_RATE_EMPLOYEE = 0.0229;
+        const EI_RATE_EMPLOYER = 0.0321;
+        const EI_MAX_ANNUAL = 63300;
+        
+        // Corporate tax rates
+        const SMALL_BUSINESS_RATE = 0.115; // 11.5% combined federal and Ontario small business rate
+        const HST_RATE = 0.13;
+        const DIVIDEND_GROSS_UP = 1.15; // 15% gross-up for non-eligible dividends
+
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const button = content.previousElementSibling;
+            
+            content.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+        function calculateTaxBrackets(income, brackets) {
+            let tax = 0;
+            let remainingIncome = income;
+            
+            for (let i = 0; i < brackets.length; i++) {
+                const bracket = brackets[i];
+                const previousCap = i > 0 ? brackets[i-1].cap : 0;
+                const taxableAtThisBracket = Math.min(remainingIncome, Math.max(0, bracket.cap - previousCap));
+                
+                if (taxableAtThisBracket <= 0) break;
+                
+                tax += taxableAtThisBracket * bracket.rate;
+                remainingIncome -= taxableAtThisBracket;
+                
+                if (remainingIncome <= 0) break;
+            }
+            
+            return tax;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-CA', {
+                style: 'currency',
+                currency: 'CAD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function calculateTaxes() {
+            // Get input values
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const salary = parseFloat(document.getElementById('salary').value) || 0;
+            const dividendPaid = parseFloat(document.getElementById('dividendPaid').value) || 0;
+            const payrollSoftware = parseFloat(document.getElementById('payrollSoftware').value) || 0;
+            const hstItcs = parseFloat(document.getElementById('hstItcs').value) || 0;
+
+            // Tax rates and amounts
+            const fedDtcRate = parseFloat(document.getElementById('fedDtcRate').value) || 0.0901;
+            const onDtcRate = parseFloat(document.getElementById('onDtcRate').value) || 0.0294;
+            const fedBpa = parseFloat(document.getElementById('fedBpa').value) || 15000;
+            const onBpa = parseFloat(document.getElementById('onBpa').value) || 11865;
+
+            // Tax brackets
+            const fedBrackets = [
+                { cap: parseFloat(document.getElementById('fedCap1').value) || 53359, rate: parseFloat(document.getElementById('fedRate1').value) || 0.15 },
+                { cap: parseFloat(document.getElementById('fedCap2').value) || 106717, rate: parseFloat(document.getElementById('fedRate2').value) || 0.205 },
+                { cap: parseFloat(document.getElementById('fedCap3').value) || 165430, rate: parseFloat(document.getElementById('fedRate3').value) || 0.26 },
+                { cap: parseFloat(document.getElementById('fedCap4').value) || 235675, rate: parseFloat(document.getElementById('fedRate4').value) || 0.29 },
+                { cap: Infinity, rate: 0.33 }
+            ];
+
+            const onBrackets = [
+                { cap: parseFloat(document.getElementById('onCap1').value) || 49231, rate: parseFloat(document.getElementById('onRate1').value) || 0.0505 },
+                { cap: parseFloat(document.getElementById('onCap2').value) || 98463, rate: parseFloat(document.getElementById('onRate2').value) || 0.0915 },
+                { cap: parseFloat(document.getElementById('onCap3').value) || 150000, rate: parseFloat(document.getElementById('onRate3').value) || 0.1116 },
+                { cap: parseFloat(document.getElementById('onCap4').value) || 220000, rate: parseFloat(document.getElementById('onRate4').value) || 0.1216 },
+                { cap: Infinity, rate: 0.1316 }
+            ];
+
+            // Corporate calculations
+            const hstCollected = revenue * HST_RATE;
+            const employerCpp = Math.min(Math.max(0, salary * 12 - CPP_EXEMPTION), CPP_MAX_ANNUAL - CPP_EXEMPTION) * CPP_RATE / 12;
+            const employerEi = Math.min(salary, EI_MAX_ANNUAL / 12) * EI_RATE_EMPLOYER;
+            const totalEmployerCosts = employerCpp + employerEi;
+            
+            const preTaxProfit = revenue - salary - totalEmployerCosts - payrollSoftware;
+            const corporateTax = Math.max(0, preTaxProfit * SMALL_BUSINESS_RATE);
+            const afterTaxProfitBeforeDividends = preTaxProfit - corporateTax;
+            const retainedAfterDividend = afterTaxProfitBeforeDividends - dividendPaid;
+            const hstNetRemittance = hstCollected - hstItcs;
+
+            // Personal calculations
+            const annualSalary = salary * 12;
+            const annualDividendCash = dividendPaid * 12;
+            const annualDividendGrossedUp = annualDividendCash * DIVIDEND_GROSS_UP;
+            const taxableIncome = annualSalary + annualDividendGrossedUp;
+
+            // Calculate personal taxes
+            const fedBaseTax = calculateTaxBrackets(taxableIncome, fedBrackets);
+            const onBaseTax = calculateTaxBrackets(taxableIncome, onBrackets);
+            
+            const fedBpaCredit = fedBpa * (fedBrackets[0].rate);
+            const onBpaCredit = onBpa * (onBrackets[0].rate);
+            
+            const fedDividendTaxCredit = annualDividendGrossedUp * fedDtcRate;
+            const onDividendTaxCredit = annualDividendGrossedUp * onDtcRate;
+            
+            const fedTaxAfterCredits = Math.max(0, fedBaseTax - fedBpaCredit - fedDividendTaxCredit);
+            const onTaxAfterCredits = Math.max(0, onBaseTax - onBpaCredit - onDividendTaxCredit);
+            const totalPersonalTaxAnnual = fedTaxAfterCredits + onTaxAfterCredits;
+            const totalPersonalTaxMonthly = totalPersonalTaxAnnual / 12;
+
+            // CPP employee contribution
+            const cppEmployeeAnnual = Math.min(Math.max(0, annualSalary - CPP_EXEMPTION), CPP_MAX_ANNUAL - CPP_EXEMPTION) * CPP_RATE;
+            const cppEmployeeMonthly = cppEmployeeAnnual / 12;
+
+            // EI employee contribution
+            const eiEmployeeAnnual = Math.min(annualSalary, EI_MAX_ANNUAL) * EI_RATE_EMPLOYEE;
+            const eiEmployeeMonthly = eiEmployeeAnnual / 12;
+
+            // Net amounts - simplified approach
+            const totalDeductions = cppEmployeeMonthly + eiEmployeeMonthly + totalPersonalTaxMonthly;
+            const totalGrossIncome = salary + dividendPaid;
+            
+            // Proportional allocation of tax burden
+            const salaryProportion = totalGrossIncome > 0 ? salary / totalGrossIncome : 0;
+            const dividendProportion = totalGrossIncome > 0 ? dividendPaid / totalGrossIncome : 0;
+            
+            const netSalary = salary - (cppEmployeeMonthly + eiEmployeeMonthly) - (totalPersonalTaxMonthly * salaryProportion);
+            const netDividend = dividendPaid - (totalPersonalTaxMonthly * dividendProportion);
+            
+            // Tax owed calculation - any additional tax beyond what's deducted from salary
+            const taxOwed = Math.max(0, totalPersonalTaxMonthly - (cppEmployeeMonthly + eiEmployeeMonthly + totalPersonalTaxMonthly * salaryProportion));
+
+            // Display results
+            displayResults({
+                // Corporate results
+                revenue,
+                hstCollected,
+                salary,
+                employerCpp,
+                employerEi,
+                payrollSoftware,
+                preTaxProfit,
+                corporateTax,
+                afterTaxProfitBeforeDividends,
+                dividendPaid,
+                retainedAfterDividend,
+                hstItcs,
+                hstNetRemittance,
+                
+                // Personal results
+                salaryMonthly: salary,
+                dividendMonthly: dividendPaid,
+                dividendMonthlyGrossedUp: annualDividendGrossedUp / 12,
+                annualSalary,
+                annualDividendCash,
+                annualDividendGrossedUp,
+                taxableIncome,
+                fedBaseTax,
+                onBaseTax,
+                fedBpaCredit,
+                onBpaCredit,
+                fedDividendTaxCredit,
+                onDividendTaxCredit,
+                fedTaxAfterCredits,
+                onTaxAfterCredits,
+                totalPersonalTaxAnnual,
+                totalPersonalTaxMonthly,
+                cppEmployeeAnnual,
+                cppEmployeeMonthly,
+                eiEmployeeAnnual,
+                eiEmployeeMonthly,
+                netSalary,
+                netDividend,
+                taxOwed
+            });
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <h3>📊 Corporate Summary</h3>
+                    <div class="result-item">
+                        <span class="result-label">Monthly Revenue (before HST)</span>
+                        <span class="result-value">${formatCurrency(results.revenue)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">HST Collected</span>
+                        <span class="result-value">${formatCurrency(results.hstCollected)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Salary Paid</span>
+                        <span class="result-value">${formatCurrency(results.salary)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Employer CPP</span>
+                        <span class="result-value">${formatCurrency(results.employerCpp)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Employer EI</span>
+                        <span class="result-value">${formatCurrency(results.employerEi)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Payroll Software</span>
+                        <span class="result-value">${formatCurrency(results.payrollSoftware)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Pre-tax Profit</span>
+                        <span class="result-value">${formatCurrency(results.preTaxProfit)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Corporate Tax (Monthly)</span>
+                        <span class="result-value">${formatCurrency(results.corporateTax)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">After-tax Profit (before dividends)</span>
+                        <span class="result-value">${formatCurrency(results.afterTaxProfitBeforeDividends)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Dividend Paid (Cash)</span>
+                        <span class="result-value">${formatCurrency(results.dividendPaid)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Retained After Dividend</span>
+                        <span class="result-value ${results.retainedAfterDividend >= 0 ? 'positive' : 'negative'}">${formatCurrency(results.retainedAfterDividend)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">HST ITCs</span>
+                        <span class="result-value">${formatCurrency(results.hstItcs)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">HST Net Remittance to CRA</span>
+                        <span class="result-value">${formatCurrency(results.hstNetRemittance)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>💰 Personal Income Summary</h3>
+                    <div class="result-item">
+                        <span class="result-label">Salary (Monthly)</span>
+                        <span class="result-value">${formatCurrency(results.salaryMonthly)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Dividend (Monthly Cash)</span>
+                        <span class="result-value">${formatCurrency(results.dividendMonthly)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Dividend (Monthly Grossed-up)</span>
+                        <span class="result-value">${formatCurrency(results.dividendMonthlyGrossedUp)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Annual Salary</span>
+                        <span class="result-value">${formatCurrency(results.annualSalary)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Annual Dividend (Cash)</span>
+                        <span class="result-value">${formatCurrency(results.annualDividendCash)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Annual Dividend (Grossed-up Taxable)</span>
+                        <span class="result-value">${formatCurrency(results.annualDividendGrossedUp)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Taxable Income</span>
+                        <span class="result-value">${formatCurrency(results.taxableIncome)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🧾 Tax Calculations</h3>
+                    <div class="result-item">
+                        <span class="result-label">Federal Base Tax (before credits)</span>
+                        <span class="result-value">${formatCurrency(results.fedBaseTax)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Ontario Base Tax (before credits)</span>
+                        <span class="result-value">${formatCurrency(results.onBaseTax)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Federal BPA Credit</span>
+                        <span class="result-value">${formatCurrency(results.fedBpaCredit)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Ontario BPA Credit</span>
+                        <span class="result-value">${formatCurrency(results.onBpaCredit)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Federal Dividend Tax Credit</span>
+                        <span class="result-value">${formatCurrency(results.fedDividendTaxCredit)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Ontario Dividend Tax Credit</span>
+                        <span class="result-value">${formatCurrency(results.onDividendTaxCredit)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Federal Tax After Credits</span>
+                        <span class="result-value">${formatCurrency(results.fedTaxAfterCredits)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Ontario Tax After Credits</span>
+                        <span class="result-value">${formatCurrency(results.onTaxAfterCredits)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Personal Tax (Annual)</span>
+                        <span class="result-value">${formatCurrency(results.totalPersonalTaxAnnual)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Personal Tax (Monthly)</span>
+                        <span class="result-value">${formatCurrency(results.totalPersonalTaxMonthly)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">CPP Employee (Annual)</span>
+                        <span class="result-value">${formatCurrency(results.cppEmployeeAnnual)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">CPP Employee (Monthly)</span>
+                        <span class="result-value">${formatCurrency(results.cppEmployeeMonthly)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">EI Employee (Annual)</span>
+                        <span class="result-value">${formatCurrency(results.eiEmployeeAnnual)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">EI Employee (Monthly)</span>
+                        <span class="result-value">${formatCurrency(results.eiEmployeeMonthly)}</span>
+                    </div>
+                </div>
+
+                <div class="result-card highlight">
+                    <h3>✨ Final Results</h3>
+                    <div class="result-item">
+                        <span class="result-label"><strong>Net Salary (Monthly)</strong></span>
+                        <span class="result-value"><strong>${formatCurrency(results.netSalary)}</strong></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><strong>Net Dividend (Monthly)</strong></span>
+                        <span class="result-value"><strong>${formatCurrency(results.netDividend)}</strong></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><strong>Total Monthly Take-Home</strong></span>
+                        <span class="result-value"><strong>${formatCurrency(results.netSalary + results.netDividend)}</strong></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><strong>Additional Tax Owed (if any)</strong></span>
+                        <span class="result-value ${results.taxOwed > 0 ? 'negative' : 'positive'}"><strong>${results.taxOwed > 0 ? formatCurrency(results.taxOwed) : '$0.00'}</strong></span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>📈 Annual Summary</h3>
+                    <div class="result-item">
+                        <span class="result-label">Annual Net Salary</span>
+                        <span class="result-value">${formatCurrency(results.netSalary * 12)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Annual Net Dividends</span>
+                        <span class="result-value">${formatCurrency(results.netDividend * 12)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Annual Take-Home</span>
+                        <span class="result-value"><strong>${formatCurrency((results.netSalary + results.netDividend) * 12)}</strong></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Effective Tax Rate on Taxable Income</span>
+                        <span class="result-value">${results.taxableIncome > 0 ? ((results.totalPersonalTaxAnnual + results.cppEmployeeAnnual + results.eiEmployeeAnnual) / results.taxableIncome * 100).toFixed(2) : 0}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Corporate Tax (Annual)</span>
+                        <span class="result-value">${formatCurrency(results.corporateTax * 12)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">HST Net Remittance (Annual)</span>
+                        <span class="result-value">${formatCurrency(results.hstNetRemittance * 12)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Government Remittances (Annual)</span>
+                        <span class="result-value">${formatCurrency((results.corporateTax + results.hstNetRemittance + results.totalPersonalTaxMonthly + results.cppEmployeeMonthly + results.eiEmployeeMonthly + results.employerCpp + results.employerEi) * 12)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize with default calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateTaxes();
+        });
+
+        // Auto-calculate when inputs change
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number') {
+                calculateTaxes();
+            }
+        });
+    </script>
+</body>
+</html>
